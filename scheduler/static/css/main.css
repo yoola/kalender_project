@@ -1,0 +1,59 @@
+*{
+  font-family:arial;
+}
+
+.rzslider .rz-pointer {
+    background-color: orange !important;
+}
+
+.rzslider .rz-pointer.rz-active {
+    background-color: orange !important;
+}
+
+.rzslider .rz-pointer.rz-active::after {
+    background-color: #e0e0e0 !important;
+}
+
+.rzslider .rz-selection {
+    background: orange !important;
+}
+
+.rzslider .rz-model-value, .rzslider .rz-model-high {
+    font-size: 12px;
+    font-weight: bold;
+    bottom: 18px !important;
+}
+
+.rzslider .rz-limit {
+    font-size: 11px;
+}
+
+.rzslider .rz-pointer {
+	top: -10px !important;
+    width: 24px !important;
+    height: 24px !important;
+}
+
+.rzslider .rz-pointer::after {
+    top: 8px !important;
+    left: 8px !important;
+}
+
+button {
+    margin: 0 auto;
+    display: block;
+    border: none;
+    border-radius: 2px;
+    font-size: 12px;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.week-day {
+    font-size: 12px;
+    margin-bottom: 0px;
+    text-align: center;
+    margin-top: 28px;
+    font-weight: bold;
+}

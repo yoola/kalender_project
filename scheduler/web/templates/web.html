@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Web Scheduler</title>
+		<link rel="stylesheet" type="text/css" href="/static/css/main.css"/>
+		<script src="//cdnjs.cloudflare.com/ajax/libs/moment.js/2.10.6/moment-with-locales.js"></script>
+		<script src="/static/lib/angular/angular.min.js"></script>
+		<link rel="stylesheet" type="text/css" href="/static/lib/angular-slider/rzslider.css"/>
+		<link rel="stylesheet" type="text/css" href="/static/lib/angular-moment-picker-master/dist/angular-moment-picker.min.css"/>
+		<script src="/static/lib/angular-slider/rzslider.min.js"></script>
+		<script src="/static/lib/angular-moment-picker-master/dist/angular-moment-picker.min.js"></script>
+
+		<script type="text/javascript">
+		    angular.module('app', ['rzSlider','moment-picker']);
+
+		    angular.module('app').controller('controller', function($scope, $http) {
+
+		    	// generating time intervall array
+		    	var x = 5; //minutes interval
+				var steptimes = []; // time array
+				var tt = 0; // start time
+				
+				//loop to increment the time and push results in array
+				for (var i=0;tt<24*60; i++) {
+					var hh = Math.floor(tt/60); // getting hours of day in 0-24 format
+					var mm = (tt%60); // getting minutes of the hour in 0-55 format
+					steptimes[i] = ("0" + (hh % 24)).slice(-2) + ':' + ("0" + mm).slice(-2); //pushing data 	in array in [00:00 - 12:00 AM/PM format]
+					tt = tt + x;
+				}
+				steptimes.push("24:00");
+
+
+
+		        $scope.sliderOptions = {
+
+		            stepsArray: steptimes,
+		            autoHideLimitLabels: true,
+		            noSwitching: true
+		        }
+
+		        $scope.sliders = [];
+
+		        $scope.days = ['Every Monday', 'Every Tuesday','Every Wednesday','Every Thursday','Every Friday','Every Saturday','Every Sunday'];
+
+		        $scope.now = moment(); //new moment().format("D/MMM/YYYY");
+		        $scope.activeData2 = moment();
+
+		        $scope.addEverydaySchedule = function(selectedDay) {
+		        	console.log(selectedDay)
+		        	$scope.sliders.push(
+		        		{
+		        			startday: selectedDay,
+		        			endday: '',
+		        			starttime: '08:00',
+		        			endtime: '12:00'
+		        		}
+		        	)
+		        }
+
+		        $scope.addExceptions = function(selectedDay1,selectedDay2) {
+
+		        	console.log(selectedDay2)
+
+		        	if (selectedDay1 != null && selectedDay2 == null){
+
+		        		$scope.sliders.push(
+		        			{
+		        				startday: selectedDay1,
+		        				endday: '',
+		        				starttime: '08:00',
+		        				endtime: '12:00',
+		        			}
+		        		)     
+		        	}
+
+		        	if (selectedDay1 != null && selectedDay2 != null){
+
+		        		$scope.sliders.push(
+		        			{
+		        				startday: selectedDay1,
+		        				endday : selectedDay2,
+		        				starttime: '08:00',
+		        				endtime: '12:00',
+		        			}
+		        		)     
+		        	}        	
+		        }
+
+
+                $scope.allDay = function(slider) {
+		            slider.starttime = '00:00';
+		            slider.endtime = '24:00';
+		        }
+
+		        $scope.showAllDay = function(slider) {
+		            if (slider.starttime == $scope.sliderOptions.stepsArray[0] && slider.endtime == $scope.sliderOptions.stepsArray[$scope.sliderOptions.stepsArray.length - 1]) {
+		                return false;
+		            }
+		            return true;
+		        }
+
+
+		        $scope.onChange1 = function(newValue, oldValue){
+
+		        	$scope.activeData2 = newValue;
+		        }
+
+		        $scope.onChange2 = function(newValue, oldValue){
+
+		        	$scope.activeData1 = newValue;
+		        }
+
+
+		        $scope.deleteDay = function(item) {
+		        	var index = $scope.sliders.indexOf(item);
+		        	$scope.sliders.splice(index, 1);
+		        }
+
+		        $scope.addDay = function(item) {
+		        	var index = $scope.sliders.indexOf(item);
+		        	$scope.sliders.splice(index, 1);
+		        }
+
+		        $scope.submit = function(data){
+
+		        	var alldata = []
+
+
+		        	for (var i=0;i<data.length; i++) {
+		        		alldata[i] = JSON.stringify({startday:data[i].startday, endday:data[i].endday, starttime:data[i].starttime, endtime:data[i].endtime});
+		        	}
+
+		        	console.log("alldata: ",alldata);
+
+		        	for (var i=0;i<data.length; i++) {
+		        		$http.post('http://127.0.0.1:8000/api/schedule/',alldata[i]).then(
+	
+			        			function successCallback(response) {
+			        				console.log("Posted data");
+			        				console.log(response);
+			        				$scope.alldata =alldata[i];
+			        		// this callback will be called asynchronously
+			        		// when the response is available
+			        		}, function errorCallback(response) {
+			        			console.log("Could not post data");
+			        			console.log(response);
+			        		// called asynchronously if an error occurs
+			        		// or server returns response with an error status
+			        			$scope.response = response;
+		    			});
+		        	}
+
+		        }
+
+		    });
+
+		</script>
+	</head>
+
+	<style>
+
+		#idsliders{width: 600px;margin: 0 auto;}
+		#idrepeat{margin-bottom: 50px;overflow: hidden;}
+		#idslider1{display:flex; align-self: center; width: 100px; float: left;}
+		#idslider2{width: 400px; float: left;}
+		#idslider3{align-self: center; width: 100px; float: right;}
+		#idslider4{align-self: center; width: 100px; float: right;}
+
+		#idDay { width: 150px; }
+		#idAddDay {width: 100px; }
+		#idDate1{ width: 100px; margin-top: 100px;}
+		#idDate2{ width: 100px; margin-top: 20px;}
+		#idDateTime1 { width: 100px; margin-top: 100px;}
+		#idDateTime2 { width: 100px; margin-top: 20px;}
+		#idAddDate { width: 150px;}
+		
+	</style>
+
+	<body ng-app="app">
+		<div ng-controller="controller">
+			<div style="width: 100px; margin-right: 200px; float:right">	
+				<div id = "idDay">
+					<select ng-model="selectedDay" ng-options="d for d in days" ></select>
+				</div>
+				<div id = "idAddDay">
+					<button ng-click="addEverydaySchedule(selectedDay)">Add</button>
+				</div>
+				<div
+					id = "idDate1" 
+					class="input-group"
+					min-date = "now"
+					max-date = "activeData1"
+     				moment-picker="controller.datepicker1"
+     				change="onChange1(newValue, oldValue)"
+     				format="YYYY-MM-DD"
+     				today="true">
+    				<span class="input-group-addon">
+        				<i class="octicon octicon-clock"></i>
+    				</span>
+    				<input class="form-control"
+           				placeholder="Select day"
+           				ng-model="controller.datepicker1"
+           				ng-model-options="{ updateOn: 'blur' }">
+				</div>
+				<div
+					id = "idDate2" 
+					class="input-group"
+					min-date = "activeData2"
+     				moment-picker="controller.datepicker2"
+     				change="onChange2(newValue, oldValue)"
+     				format="YYYY-MM-DD"
+     				today="true"
+     				start-view="month">
+    				<span class="input-group-addon">
+        				<i class="octicon octicon-clock"></i>
+    				</span>
+    				<input class="form-control"
+           				placeholder= "Select day"
+           				ng-model="controller.datepicker2"
+           				ng-model-options="{ updateOn: 'blur' }">
+				</div>			
+				<div id = "idAddDate">
+					<button ng-click="addExceptions(controller.datepicker1, controller.datepicker2)">Add Exception</button>
+				</div>
+			</div>
+			<div id = "idsliders">	
+				<div id = "idrepeat" ng-repeat="s in sliders">
+					<div  id = "idslider1">
+						<p class="week-day text-capitalize" ng-if = "!s.endday" ng-bind="s.startday"></p>
+						<p class="week-day text-capitalize" ng-if = "s.endday" ng-bind="s.startday +' - '+s.endday"></p>
+					</div> 
+					<div id = "idslider2">
+						<rzslider rz-slider-model="s.starttime" rz-slider-high="s.endtime" rz-slider-options="sliderOptions"></rzslider>
+					</div>
+					<div id = "idslider3">
+						<button ng-if="showAllDay(s)" ng-click="allDay(s)">All day</button>
+					</div>
+					<div id = "idslider4">
+						<button ng-click="deleteDay(s)">Delete day</button>
+					</div>
+				</div>
+			</div>
+			<form method="post" enctype="multipart/form-data">
+				<button ng-click="submit(sliders)">Submit</button>
+			</form>
+		</div>
+	</body>
+</html>
