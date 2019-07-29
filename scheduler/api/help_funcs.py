@@ -1,8 +1,10 @@
 import datetime
 from datetimerange import DateTimeRange
+from itertools import cycle
 
 def check_insect_with_dates_list(list_times,test_range):
 
+	print("list_times 0: ",list_times)
 
 	not_set = True
 	index_set = 0
@@ -12,6 +14,7 @@ def check_insect_with_dates_list(list_times,test_range):
 	if not list_times:
 		print("List was empty.\n")
 		list_times.append(test_range)
+		print("list_times 01: ",list_times)
 	else:
 
 		for i in range(0,len(list_times)):
@@ -28,6 +31,7 @@ def check_insect_with_dates_list(list_times,test_range):
 					test_range = list_times[i]
 					not_set = False 
 					index_set = i
+					print("First intersect test_range: ", test_range)
 
 				else:
 					print("More intersections.\n")
@@ -59,6 +63,42 @@ def change_24_to_00(end_time):
 
 	return end_time
 
+def get_day_of_Every(everyday):
+
+	if everyday == "Every Monday":
+		return "mon"
+	if everyday == "Every Tuesday":
+		return "tues"
+	if everyday == "Every Wednesday":
+		return "wed"
+	if everyday == "Every Thursday":
+		return "thurs"
+	if everyday == "Every Friday":
+		return "fri"
+	if everyday == "Every Saturday":
+		return "sat"
+	if everyday == "Every Sunday":
+		return "sun"
+
+def is_intersection_every(day, test_day):
+
+	list_days = cycle(["mon","tues","wed","thurs","fri","sat","sun"])
+
+	day_i = list_days.index(day)
+	test_day_i = list_days.index(test_day)
+
+	if day_i == test_day_[i-1]:
+		print(" day_i == test_day_i-1")
+	if day_i == test_day_i+1:
+		print(" day_i == test_day_i+1")
+	if day_i == test_day_i:
+		print(" day_i == test_day_i")
+	else:
+		print("No proceeding days")
+
+is_intersection_every("mon","tues")
+is_intersection_every("sun","mon")
+is_intersection_every("tues", "sat")
 
 
 # time_range3 = DateTimeRange("2015-03-22 15:03:00", "2015-03-22 16:07:00")

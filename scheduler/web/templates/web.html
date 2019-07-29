@@ -123,22 +123,21 @@
 
 		        $scope.submit = function(data){
 
-		        	var alldata = []
+		        	// var alldata = []
 
 
-		        	for (var i=0;i<data.length; i++) {
-		        		alldata[i] = JSON.stringify({startday:data[i].startday, endday:data[i].endday, starttime:data[i].starttime, endtime:data[i].endtime});
-		        	}
+		        	// for (var i=0;i<data.length; i++) {
+		        	// 	alldata[i] = JSON.stringify({startday:data[i].startday, endday:data[i].endday, starttime:data[i].starttime, endtime:data[i].endtime});
+		        	// }
 
-		        	console.log("alldata: ",alldata);
+		        	//console.log("alldata: ",alldata);
 
-		        	for (var i=0;i<data.length; i++) {
-		        		$http.post('http://127.0.0.1:8000/api/schedule/',alldata[i]).then(
+		        	$http.post('http://127.0.0.1:8000/api/schedule/',data).then(
 	
 			        			function successCallback(response) {
 			        				console.log("Posted data");
 			        				console.log(response);
-			        				$scope.alldata =alldata[i];
+			        				$scope.data =data;
 			        		// this callback will be called asynchronously
 			        		// when the response is available
 			        		}, function errorCallback(response) {
@@ -147,8 +146,7 @@
 			        		// called asynchronously if an error occurs
 			        		// or server returns response with an error status
 			        			$scope.response = response;
-		    			});
-		        	}
+		    		});
 
 		        }
 

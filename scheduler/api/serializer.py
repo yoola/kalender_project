@@ -2,17 +2,25 @@ from api.models import Schedule
 from rest_framework import serializers
 
 
-        # Serializers define the API representation.
-class ScheduleSerializer(serializers.ModelSerializer):
+class Schedule(object):
 
-	# startday = serializers.CharField(max_length=20)
-	# endday = serializers.CharField(required=False, allow_blank=True, max_length=20)
-	# starttime = serializers.TimeField()
-	# endtime = serializers.TimeField()
+	def __init__(self, startday, endday, starttime, endtime):
+		self.startday = startday
+		self.endday = endday
+		self.starttime = starttime
+		self.endtime = endtime
 
-	class Meta:
-		model = Schedule
-		fields = ('startday', 'endday', 'starttime', 'endtime')
+# Serializers define the API representation.
+class ScheduleSerializer(serializers.Serializer):
+
+	startday = serializers.CharField(max_length=20)
+	endday = serializers.CharField(required=False, allow_blank=True, max_length=20)
+	starttime = serializers.CharField(max_length=20)
+	endtime = serializers.CharField(max_length=20)
+
+	# class Meta:
+	# 	model = Schedule
+	# 	fields = ('startday', 'endday', 'starttime', 'endtime')
 
 	def create(self, validated_data):
 
