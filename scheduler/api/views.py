@@ -16,7 +16,8 @@ from datetimerange import DateTimeRange
 import string
 import random
 
-from api.help_funcs import check_insect_with_dates_list, get_day_of_Every
+from api.help_funcs import get_day_of_Every, change_24_to_00, every_change_24_to_00
+from api.help_funcs import check_insect_with_dates_list, check_insect_with_every_list
 
 # If you want all scheduled jobs to use this store by default,
 # use the name 'default' instead of 'djangojobstore'.
@@ -103,12 +104,7 @@ class ScheduleList(APIView):
 		
 						# define that if it is a specific day, the end day will be the next day at 00:00
 						stopDate = str(startday_list[d])+str(' ')+str(endtime_list[d])+str(':00')
-						if stopDate[11:13] == "24":
-							stopDate = stopDate.replace("24","00")
-							stopDate = datetime.datetime.strptime(stopDate, '%Y-%m-%d %H:%M:%S')
-							stopDate = stopDate + datetime.timedelta(days=1)
-						else:
-							stopDate = datetime.datetime.strptime(stopDate, '%Y-%m-%d %H:%M:%S')
+						stopDate = change_24_to_00(stopDate)
 						stopDateEnd = stopDate + datetime.timedelta(seconds=1)
 
 						test_range = DateTimeRange(startDate, stopDate)
@@ -122,12 +118,7 @@ class ScheduleList(APIView):
 						startDate_intervall = str(endday_list[d])+str(' ')+str(starttime_list[d])+str(':00')
 
 						stopDate = str(endday_list[d])+str(' ')+str(endtime_list[d])+str(':00')
-						if stopDate[11:13] == "24":
-							stopDate = stopDate.replace("24","00")
-							stopDate = datetime.datetime.strptime(stopDate, '%Y-%m-%d %H:%M:%S')
-							stopDate = stopDate + datetime.timedelta(days=1)
-						else:
-							stopDate = datetime.datetime.strptime(stopDate, '%Y-%m-%d %H:%M:%S')
+						stopDate = change_24_to_00(stopDate)
 						
 
 						stopDate_intervall = str(startday_list[d])+str(' ')+str(endtime_list[d])+str(':00')
@@ -149,33 +140,45 @@ class ScheduleList(APIView):
 					startminute_ = starttime_list[d][4:6]
 					endhour_ = endtime_list[d][0:2]
 					endminute_ = endtime_list[d][4:6]
-					print("hour: ", hour_)
 
-					scheduler.add_job(start_job, 'cron', day_of_week=get_day_of_Every(startday_list[d]), hour=starthour_, minute= startminute_)
-					scheduler.add_job(stop_job, 'cron', day_of_week=get_day_of_Every(startday_list[d]), hour=endhour_, minute= endminute_)
+					#startday_list[d] = every_change_24_to_00(get_day_of_Every(startday_list[d]), starttime_list[d], endtime_list[d])
+
+					list_every = check_insect_with_every_list(get_day_of_Every(startday_list[d]), starttime_list[d], endtime_list[d], list_every)
+
+					#scheduler.add_job(start_job, 'cron', day_of_week=get_day_of_Every(startday_list[d]), hour=starthour_, minute= startminute_)
+					#scheduler.add_job(stop_job, 'cron', day_of_week=get_day_of_Every(startday_list[d]), hour=endhour_, minute= endminute_)
 
 					#print(" Ok, this starts with Every: ", get_day_of_Every(startday_list[d]))
 
 
 
-			# print("Final datetimes list: ", list_times)
+			print("Final datetimes list: ", list_times)
 
-			# for i in list_times:
+			for i in list_times:
 
-			# 	first_ = str(i)[0:19]
-			# 	first_ = first_.replace('T', ' ')
-			# 	second_ = str(i)[22:42]
-			# 	second_ = second_.replace('T', ' ')
+				first_ = str(i)[0:19]
+				first_ = first_.replace('T', ' ')
+				second_ = str(i)[22:42]
+				second_ = second_.replace('T', ' ')
 			
-			# 	first_ = datetime.datetime.strptime(first_, '%Y-%m-%d %H:%M:%S')
-			# 	second_ = datetime.datetime.strptime(second_, '%Y-%m-%d %H:%M:%S')
+				first_ = datetime.datetime.strptime(first_, '%Y-%m-%d %H:%M:%S')
+				second_ = datetime.datetime.strptime(second_, '%Y-%m-%d %H:%M:%S')
 				
-			# 	jobStart = scheduler.add_job(start_job, id = "start_job_"+randID(), trigger='date', next_run_time=str(first_))
-			# 	jobStop = scheduler.add_job(stop_job, id = "stop_job_"+randID(), trigger='date', next_run_time=str(second_))
+				jobStart = scheduler.add_job(start_job, id = "start_job_"+randID(), trigger='date', next_run_time=str(first_))
+				jobStop = scheduler.add_job(stop_job, id = "stop_job_"+randID(), trigger='date', next_run_time=str(second_))
+
+
+			# print("Final every day list: ", list_every)
+			# for i in range(0,len(list_every)):
+			# 	print("i: ", list_every[i][0], list_every[i][1], list_every[i][2])
+			# 	hour_ = list_every[i][1]
+			# 	scheduler.add_job(start_job, 'cron', day_of_week=list_every[i][0], hour=hour_[0:2])
+
+
 								
-			# scheduler.print_jobs()
-			# register_events(scheduler)
-			# scheduler.resume()
+			scheduler.print_jobs()
+			register_events(scheduler)
+			scheduler.resume()
 				
 
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
