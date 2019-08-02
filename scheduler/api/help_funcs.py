@@ -1,6 +1,5 @@
 import datetime
 from datetimerange import DateTimeRange
-from itertools import cycle
 
 def check_insect_with_dates_list(list_times,test_range):
 
@@ -53,6 +52,15 @@ def check_insect_with_dates_list(list_times,test_range):
 	return list_times
 
 
+
+def split_intervall_days(day):
+	if "-" in day:
+		list_days = day.split("-")
+		for i in range(0,len(list_days)):
+			list_days[i] = list_days[i].replace(" ","")
+		return list_days
+	return [day]
+
 def change_24_to_00(date1):
 
 	if date1[11:13] == "24":
@@ -67,11 +75,17 @@ def change_24_to_00(date1):
 def every_change_24_to_00(test_day,test_day_start, test_day_end):
 
 	list_days = ["mon","tue","wed","thu","fri","sat","sun","mon"]
+	splitted_day = split_intervall_days(test_day)
+	if len(splitted_day) == 2:
+		test_day = splitted_day[1]
+	else:
+		test_day = splitted_day[0]
 
-	if test_day_end.startswith("24:00"):
-		index = list_days.index(test_day)
-		test_day = test_day +"-"+ list_days[index+1]
-		test_day_end = "00:00"
+	index = list_days.index(test_day)
+	test_day = test_day +"-"+ list_days[index+1]
+	test_day_end = "00:00"
+
+	print("end result: ", test_day, test_day_start, test_day_end)
 
 
 	return (test_day, test_day_start, test_day_end)
@@ -98,8 +112,6 @@ def get_day_of_Every(everyday):
 		return "sun"
 
 def are_proceeding_days(test_day, day):
-
-	#list_days = cycle(["mon","tues","wed","thurs","fri","sat","sun"])
 
 	print("test_day: ", test_day)
 	if isinstance(day, list):
@@ -144,7 +156,7 @@ def are_proceeding_days(test_day, day):
 		if day == "sat":
 			return "previous"
 		if day == "fri":
-			return "fri"
+			return "same"
 
 	if test_day == "sat":
 		if day == "fri":
@@ -215,16 +227,6 @@ def join_days(test_day, test_day_start, test_day_end, list_day, day_start, day_e
 	return to_do
 
 
-
-
-
-def split_intervall_days(day):
-	if "-" in day:
-		list_days = day.split("-")
-		for i in range(0,len(list_days)):
-			list_days[i] = list_days[i].replace(" ","")
-		return list_days
-	return [day]
 
 
 def join_intervall_days(test_day, test_day_start, test_day_end, list_days, day_start, day_end):
@@ -379,6 +381,10 @@ def check_insect_with_every_list(test_day, test_day_start, test_day_end, List_da
 
 	return List_days
 
+
+# startDate = "2019-08-01 20:00:00"
+# startDate = datetime.datetime.strptime(startDate, '%Y-%m-%d %H:%M:%S')
+# print("weekday: ", datetime.datetime.today().weekday())
 
 
 #print(join_intervall_days("sun", "13:00", "24:00", split_intervall_days("sun"), "00:00", "14:00"))

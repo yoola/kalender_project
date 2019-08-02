@@ -16,7 +16,7 @@ from datetimerange import DateTimeRange
 import string
 import random
 
-from api.help_funcs import get_day_of_Every, change_24_to_00, every_change_24_to_00
+from api.help_funcs import get_day_of_Every, change_24_to_00, every_change_24_to_00, split_intervall_days
 from api.help_funcs import check_insect_with_dates_list, check_insect_with_every_list
 
 # If you want all scheduled jobs to use this store by default,
@@ -141,14 +141,33 @@ class ScheduleList(APIView):
 					endhour_ = endtime_list[d][0:2]
 					endminute_ = endtime_list[d][4:6]
 
-					#startday_list[d] = every_change_24_to_00(get_day_of_Every(startday_list[d]), starttime_list[d], endtime_list[d])
-
 					list_every = check_insect_with_every_list(get_day_of_Every(startday_list[d]), starttime_list[d], endtime_list[d], list_every)
 
-					#scheduler.add_job(start_job, 'cron', day_of_week=get_day_of_Every(startday_list[d]), hour=starthour_, minute= startminute_)
-					#scheduler.add_job(stop_job, 'cron', day_of_week=get_day_of_Every(startday_list[d]), hour=endhour_, minute= endminute_)
 
-					#print(" Ok, this starts with Every: ", get_day_of_Every(startday_list[d]))
+
+			print("Final every day list: ", list_every)
+			for i in range(0,len(list_every)):
+			
+				if  list_every[i][2].startswith("24:00"):
+					list_every[i] = every_change_24_to_00(list_every[i][0], list_every[i][1], list_every[i][2])
+
+				starttime_ = list_every[i][1]
+				endtime_ = list_every[i][2]	
+				starthour_ = starttime_[0:2]
+				endhour_ = endtime_[0:2]
+				startminute_ = starttime_[3:6]
+				endminute_ = endtime_[3:6]
+
+				if "-" in list_every[i][0]:
+					seperate_days_list = split_intervall_days(list_every[i][0])
+
+					scheduler.add_job(start_job, 'cron', id = "start_job_"+randID(), day_of_week=seperate_days_list[0], hour=starthour_, minute=startminute_)
+					scheduler.add_job(stop_job, 'cron', id = "stop_job_"+randID(), day_of_week=seperate_days_list[1], hour=endhour_, minute=endminute_)
+				else:
+
+					scheduler.add_job(start_job, 'cron', id = "start_job_"+randID(), day_of_week=list_every[i][0], hour=starthour_, minute=startminute_)
+					scheduler.add_job(stop_job, 'cron', id = "stop_job_"+randID(), day_of_week=list_every[i][0], hour=endhour_, minute=endminute_)
+
 
 
 
@@ -160,19 +179,15 @@ class ScheduleList(APIView):
 				first_ = first_.replace('T', ' ')
 				second_ = str(i)[22:42]
 				second_ = second_.replace('T', ' ')
+
+				print("first_ :", first_)
+				print("second_: ", second_)
 			
 				first_ = datetime.datetime.strptime(first_, '%Y-%m-%d %H:%M:%S')
 				second_ = datetime.datetime.strptime(second_, '%Y-%m-%d %H:%M:%S')
 				
 				jobStart = scheduler.add_job(start_job, id = "start_job_"+randID(), trigger='date', next_run_time=str(first_))
 				jobStop = scheduler.add_job(stop_job, id = "stop_job_"+randID(), trigger='date', next_run_time=str(second_))
-
-
-			# print("Final every day list: ", list_every)
-			# for i in range(0,len(list_every)):
-			# 	print("i: ", list_every[i][0], list_every[i][1], list_every[i][2])
-			# 	hour_ = list_every[i][1]
-			# 	scheduler.add_job(start_job, 'cron', day_of_week=list_every[i][0], hour=hour_[0:2])
 
 
 								
