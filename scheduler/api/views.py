@@ -18,7 +18,7 @@ import random
 
 from api.help_funcs import get_day_of_Every, change_24_to_00, every_change_24_to_00, split_intervall_days
 from api.help_funcs import check_insect_with_dates_list, check_insect_with_every_list
-
+from api.make_job_list import split_time_ranges_and_add_job
 # If you want all scheduled jobs to use this store by default,
 # use the name 'default' instead of 'djangojobstore'.
 
@@ -59,7 +59,7 @@ class ScheduleList(APIView):
 		#delete all jobs get_jobs
 		
 		serializer = ScheduleSerializer(data=request.data, many= True)
-		list_times = []
+		list_exceptions = []
 		list_every = []
 		
 		#starttime_list = []
@@ -109,7 +109,7 @@ class ScheduleList(APIView):
 
 						test_range = DateTimeRange(startDate, stopDate)
 						# check for intersections of time ranges
-						list_times = check_insect_with_dates_list(list_times, test_range )					
+						list_exceptions = check_insect_with_dates_list(list_exceptions, test_range )					
 
 					else:
 
@@ -132,7 +132,7 @@ class ScheduleList(APIView):
 							test_range = DateTimeRange(i1, j1)
 
 							# check for intersections of time ranges
-							list_times = check_insect_with_dates_list(list_times, test_range )
+							list_exceptions = check_insect_with_dates_list(list_exceptions, test_range )
 
 				if startday_list[d].startswith('Every'):
 
@@ -143,6 +143,10 @@ class ScheduleList(APIView):
 
 					list_every = check_insect_with_every_list(get_day_of_Every(startday_list[d]), starttime_list[d], endtime_list[d], list_every)
 
+
+			list_exceptions = [str(i) for i in list_exceptions]
+			sorted_exception_list = sorted(list_exceptions)
+			cron_start_stop, new_list_exceptions = split_time_ranges_and_add_job(list_exceptions, list_every)
 
 
 			print("Final every day list: ", list_every)
@@ -171,24 +175,23 @@ class ScheduleList(APIView):
 
 
 
-			print("Final datetimes list: ", list_times)
+			# print("Final datetimes list: ", list_exceptions)
 
-			for i in list_times:
+			# for i in list_exceptions:
 
-				first_ = str(i)[0:19]
-				first_ = first_.replace('T', ' ')
-				second_ = str(i)[22:42]
-				second_ = second_.replace('T', ' ')
+			# 	first_ = str(i)[0:19]
+			# 	first_ = first_.replace('T', ' ')
+			# 	second_ = str(i)[22:42]
+			# 	second_ = second_.replace('T', ' ')
 
-				print("first_ :", first_)
-				print("second_: ", second_)
+			# 	print("first_ :", first_)
+			# 	print("second_: ", second_)
 			
-				first_ = datetime.datetime.strptime(first_, '%Y-%m-%d %H:%M:%S')
-				second_ = datetime.datetime.strptime(second_, '%Y-%m-%d %H:%M:%S')
+			# 	first_ = datetime.datetime.strptime(first_, '%Y-%m-%d %H:%M:%S')
+			# 	second_ = datetime.datetime.strptime(second_, '%Y-%m-%d %H:%M:%S')
 				
-				jobStart = scheduler.add_job(start_job, id = "start_job_"+randID(), trigger='date', next_run_time=str(first_))
-				jobStop = scheduler.add_job(stop_job, id = "stop_job_"+randID(), trigger='date', next_run_time=str(second_))
-
+			# 	jobStart = scheduler.add_job(start_job, id = "start_job_"+randID(), trigger='date', next_run_time=str(first_))
+			# 	jobStop = scheduler.add_job(stop_job, id = "stop_job_"+randID(), trigger='date', next_run_time=str(second_))
 
 								
 			scheduler.print_jobs()
