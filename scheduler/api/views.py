@@ -7,6 +7,7 @@ from api.serializer import ScheduleSerializer
 from api.models import Schedule
 
 from apscheduler.schedulers.background import BackgroundScheduler
+from apscheduler.schedulers.blocking import BlockingScheduler
 from django_apscheduler.jobstores import DjangoJobStore, register_events, register_job
 
 import time
@@ -26,6 +27,12 @@ scheduler = BackgroundScheduler()
 scheduler.add_jobstore(DjangoJobStore(), "default")
 scheduler.start()
 
+def start_job():
+	print("Start job")
+
+def stop_job():
+	print("Stop job")
+
 
 
 
@@ -35,11 +42,7 @@ def randID(size=6, chars=string.ascii_uppercase + string.digits):
 
     # raise ValueError("Olala!")
 
-def start_job():
-	print("Start job")
 
-def stop_job():
-	print("Stop job")
 
 
 class ScheduleList(APIView):
@@ -57,6 +60,9 @@ class ScheduleList(APIView):
 		print("Request body: ",request.body)
 		print("Request data: ",request.data)
 		#delete all jobs get_jobs
+
+		
+		
 		
 		serializer = ScheduleSerializer(data=request.data, many= True)
 		list_exceptions = []
@@ -81,7 +87,7 @@ class ScheduleList(APIView):
 				starttime_list.append(serializer.validated_data[i]['starttime'])
 				endtime_list.append(serializer.validated_data[i]['endtime'])
 
-			# scheduler.pause()
+			scheduler.pause()
 
 
 			# print("startday_list", startday_list)
@@ -148,8 +154,41 @@ class ScheduleList(APIView):
 			sorted_exception_list = sorted(list_exceptions)
 			cron_start_stop, new_list_exceptions = split_time_ranges_and_add_job(list_exceptions, list_every)
 
+			# add one day to start dates
+			# cut out times
+
+			for i in range(0,len(cron_start_stop)):
+				for j in range(0,len(cron_start_stop[i])):
+					
+					new_start= datetime.datetime.strptime(cron_start_stop[i][j][1]+":00", '%Y-%m-%d %H:%M:%S')
+					new_end= datetime.datetime.strptime(cron_start_stop[i][j][0]+":00", '%Y-%m-%d %H:%M:%S')
+					new_start = new_start+ datetime.timedelta(days=1)
+					new_start = str(new_start)
+					new_end = str(new_end)
+					cron_start_stop[i][j] = (new_end[0:10],new_start[0:10])
+
+			for i in range(0,len(cron_start_stop)):
+				place_holder = str(datetime.datetime.strptime("2019-01-01", '%Y-%m-%d'))
+
+
+				cron_start_stop[i].insert(0,(place_holder[0:10],place_holder[0:10]))
+				cron_start_stop[i].append((place_holder[0:10],place_holder[0:10]))
+
+			seperate_days_list = split_intervall_days(list_every[0][0])
+
+			# starttime_ = list_every[0][1]
+			# endtime_ = list_every[0][2]	
+			# starthour_ = starttime_[0:2]
+			# endhour_ = endtime_[0:2]
+			# startminute_ = starttime_[3:6]
+			# endminute_ = endtime_[3:6]
+
+			# print("CRON LIST: ", cron_start_stop)
+
+			scheduler.add_job(start_job, 'cron', day_of_week='mon-fri', hour=5, minute=30, end_date='2014-06-02')
 
 			print("Final every day list: ", list_every)
+			print("cron_start_stop: ", cron_start_stop)
 			for i in range(0,len(list_every)):
 			
 				if  list_every[i][2].startswith("24:00"):
@@ -162,15 +201,66 @@ class ScheduleList(APIView):
 				startminute_ = starttime_[3:6]
 				endminute_ = endtime_[3:6]
 
-				if "-" in list_every[i][0]:
-					seperate_days_list = split_intervall_days(list_every[i][0])
+				print("i: ",i)
+				print("cron_start_stop[i][1][0]: ",cron_start_stop[i][1][0])
+				
+				
+				#add all other jobs which have only a start_date and  an end_date
 
-					scheduler.add_job(start_job, 'cron', id = "start_job_"+randID(), day_of_week=seperate_days_list[0], hour=starthour_, minute=startminute_)
-					scheduler.add_job(stop_job, 'cron', id = "stop_job_"+randID(), day_of_week=seperate_days_list[1], hour=endhour_, minute=endminute_)
-				else:
+				# if len(cron_start_stop)>2:
 
-					scheduler.add_job(start_job, 'cron', id = "start_job_"+randID(), day_of_week=list_every[i][0], hour=starthour_, minute=startminute_)
-					scheduler.add_job(stop_job, 'cron', id = "stop_job_"+randID(), day_of_week=list_every[i][0], hour=endhour_, minute=endminute_)
+				# 	print("len(cron_start_stop[i]): ",len(cron_start_stop[i]))
+
+				# 	for j in range(0,len(cron_start_stop[i])-1):
+						
+						
+				# 		start_here = cron_start_stop[i][j][1]
+				# 		stop_here = cron_start_stop[i][j+1][0]
+
+				# 		print("start_here: ", start_here)
+				# 		print("stop_here: ", stop_here)
+
+				# 		if j == 0:					
+
+				# 			print("stop_here: ", stop_here)
+
+				# 			if "-" in list_every[i][0]:
+				# 				seperate_days_list = split_intervall_days(list_every[i][0])
+
+				# 				scheduler.add_job(start_job, 'cron', id = "start_job_"+randID(), day_of_week=seperate_days_list[0], hour=starthour_, minute=startminute_, end_date = str(stop_here))
+				# 				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+randID(), day_of_week=seperate_days_list[1], hour=endhour_, minute=endminute_, end_date = str(stop_here))
+				# 			else:
+
+				# 				scheduler.add_job(start_job, 'cron', id = "start_job_"+randID(), day_of_week=list_every[i][0], hour=starthour_, minute=startminute_,  end_date = str(stop_here))
+				# 				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+randID(), day_of_week=list_every[i][0], hour=endhour_, minute=endminute_, end_date = str(stop_here))
+
+				# 		if j == (len(cron_start_stop)-1):
+
+
+				# 			print("start_here: ", start_here)
+							
+
+				# 			if "-" in list_every[i][0]:
+				# 				seperate_days_list = split_intervall_days(list_every[i][0])
+
+				# 				scheduler.add_job(start_job, 'cron', id = "start_job_"+randID(), day_of_week=seperate_days_list[0], hour=starthour_, minute=startminute_, start_date = str(start_here))
+				# 				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+randID(), day_of_week=seperate_days_list[1], hour=endhour_, minute=endminute_,start_date = str(start_here))
+				# 			else:
+
+				# 				scheduler.add_job(start_job, 'cron', id = "start_job_"+randID(), day_of_week=list_every[i][0], hour=starthour_, minute=startminute_,  start_date = str(start_here))
+				# 				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+randID(), day_of_week=list_every[i][0], hour=endhour_, minute=endminute_, start_date = str(start_here))
+
+				# 		if not (j==0 or j == 1 or j == len(cron_start_stop)-1 or j==len(cron_start_stop)):
+
+				# 			if "-" in list_every[i][0]:
+				# 				seperate_days_list = split_intervall_days(list_every[i][0])
+
+				# 				scheduler.add_job(start_job, 'cron', id = "start_job_"+randID(), day_of_week=seperate_days_list[0], hour=starthour_, minute=startminute_, start_date = start_here, end_date = stop_here)
+				# 				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+randID(), day_of_week=seperate_days_list[1], hour=endhour_, minute=endminute_, start_date = start_here, end_date = stop_here)
+				# 			else:
+
+				# 				scheduler.add_job(start_job, 'cron', id = "start_job_"+randID(), day_of_week=list_every[i][0], hour=starthour_, minute=startminute_, start_date = start_here, end_date = stop_here)
+				# 				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+randID(), day_of_week=list_every[i][0], hour=endhour_, minute=endminute_, start_date = start_here, end_date = stop_here)
 
 
 
@@ -194,9 +284,9 @@ class ScheduleList(APIView):
 			# 	jobStop = scheduler.add_job(stop_job, id = "stop_job_"+randID(), trigger='date', next_run_time=str(second_))
 
 								
-			scheduler.print_jobs()
-			register_events(scheduler)
-			scheduler.resume()
+			#scheduler.print_jobs()
+			#register_events(scheduler)
+			#scheduler.resume()
 				
 
 			return Response(serializer.data, status=status.HTTP_201_CREATED)
