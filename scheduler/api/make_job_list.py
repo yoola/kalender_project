@@ -16,6 +16,23 @@ from api.help_funcs import split_intervall_days
 # sorted_exception_list = sorted(list_exceptions)
 
 
+def add_cron_job(cron_day, stop_date):
+
+	days_= ["mon","tue","wed","thu","fri","sat","sun"]
+	cron_day = days_.index(cron_day)
+	today_ = datetime.date.today()
+
+	date1 =  datetime.datetime.strptime(str(today_), '%Y-%m-%d')
+	date2 =  datetime.datetime.strptime(stop_date, '%Y-%m-%d')-datetime.timedelta(days=1)
+	time_range = DateTimeRange(date1, date2)
+
+	for value in time_range.range(datetime.timedelta(days=1)):
+		if cron_day == value.weekday():
+			return True
+
+	return False
+
+
 def split_time_range(time_range):
 
 	list_ranges = []
@@ -73,10 +90,6 @@ def get_every_number_list(every_numbers,date_numbers):
 	
 	return list_every_numbers
 
-# number_list = get_every_number_list([2,0],[3,30])
-
-# for k in range(0, len(number_list)):
-# 	print(number_list[k])
 
 
 def check_intervalls_overlap(date_numbers, every_numbers):
@@ -167,9 +180,6 @@ def split_time_ranges_and_add_job(list_exceptions, list_every):
 				print("to_do_list[0]: ", to_do_list[0])
 				print("to_do_list[-1]: ", to_do_list[-1])
 
-			print("every_numbers_list[-1][1]: ", every_numbers_list[-1][1])
-			print("every_numbers_list[0][0]: ", every_numbers_list[0][0])
-
 
 			date_time_start = sorted_list_exceptions[i][0:16].replace("T"," ")
 			date_time_end = sorted_list_exceptions[i][22:38].replace("T"," ")
@@ -186,10 +196,16 @@ def split_time_ranges_and_add_job(list_exceptions, list_every):
 			date_time_start2 = datetime.datetime.strptime(date_time_start+":00", '%Y-%m-%d %H:%M:%S')
 			date_time_end2 = datetime.datetime.strptime(date_time_end+":00", '%Y-%m-%d %H:%M:%S')
 
+
+			
+
 			if ("all_the_same" in to_do_list or "date_to_the_right" in to_do_list or 
 				"date_to_the_left" in to_do_list or "date_inside" in to_do_list):
 
 				found_no_intersection = False
+
+
+				print("to_do_list[0]!!!!!!!!: ", to_do_list[0])
 
 					
 				if to_do_list[0] == "all_the_same":
@@ -197,7 +213,8 @@ def split_time_ranges_and_add_job(list_exceptions, list_every):
 					if not (date_starttime  == every_starttime or date_endtime == every_endtime):
 
 						print("I'm adding cron and exception in all the same.")
-						cron_start_stop[j].append((str(date_time_start),str(date_time_end)))
+						print("cron: ", date_time_start, date_time_end, "\n")
+						cron_start_stop[j].append((str(date_start),str(date_end)))
 						new_list_exceptions.append(sorted_list_exceptions[i].replace("T", " "))
 
 						# if date_starttime  == every_starttime or date_endtime == every_endtime 
@@ -206,6 +223,7 @@ def split_time_ranges_and_add_job(list_exceptions, list_every):
 				elif to_do_list[0] == "date_inside" or (to_do_list[0]=="date_to_the_right" and to_do_list[-1]=="date_to_the_left"):
 
 					print("I'm adding cron and exception in date_inside.")
+
 						
 					every_range_left0 = date_time_start2+datetime.timedelta(days=-(date_numbers[0]-every_numbers_list[0][0]))
 					every_range_left0 = every_range_left0.replace(hour=int(every_starttime_hour), minute=int(every_starttime_minute))
@@ -214,28 +232,32 @@ def split_time_ranges_and_add_job(list_exceptions, list_every):
 					every_range_right0 = (date_time_end2+datetime.timedelta(days=1)).replace(hour=00, minute=00)
 					every_range_right1 = date_time_end2+datetime.timedelta(days=every_numbers_list[-1][1]-date_numbers[1])
 					every_range_right1 = every_range_right1.replace(hour=int(every_endtime_hour), minute=int(every_endtime_minute))
-						
+
 							
 
 					if date_starttime == "00:00" and date_endtime == "00:00":
 						if len(to_do_list)>1:
 							new_list_exceptions.append(str(every_range_left0)+" - "+str(every_range_right1))
-							cron_start_stop[j].append((str(every_range_left0),str(every_range_right1)))
+							cron_start_stop[j].append((str(every_range_left0)[:-9],str(every_range_right1)[:-9]))
+							print("cron: ", str(every_range_left0)[:-9],str(every_range_right1)[:-9], "\n")
 
 					elif date_starttime == "00:00":
 						new_list_exceptions.append(str(every_range_left0)+" - "+str(date_time_end))
 						new_list_exceptions.append(str(every_range_right0)+" - "+str(every_range_right1))
-						cron_start_stop[j].append((str(every_range_left0),str(every_range_right1)))
+						cron_start_stop[j].append((str(every_range_left0)[:-9],str(every_range_right1)[:-9]))
+						print("cron: ", str(every_range_left0)[:-9],str(every_range_right1)[:-9], "\n")
 
 					elif date_endtime == "00:00":
 						new_list_exceptions.append(str(every_range_left0)+" - "+str(every_range_left1))
 						new_list_exceptions.append(str(date_time_start)+" - "+str(every_range_right1))
-						cron_start_stop[j].append((str(every_range_left0),str(every_range_right1)))
+						cron_start_stop[j].append((str(every_range_left0)[:-9],str(every_range_right1)[:-9]))
+						print("cron: ", str(every_range_left0)[:-9],str(every_range_right1)[:-9], "\n")
 					else:
 						new_list_exceptions.append(str(every_range_left0)+" - "+str(every_range_left1))
 						new_list_exceptions.append(str(date_time_start)+" - "+str(date_time_end))
 						new_list_exceptions.append(str(every_range_right0)+" - "+str(every_range_right1))
-						cron_start_stop[j].append((str(every_range_left0),str(every_range_right1)))
+						cron_start_stop[j].append((str(every_range_left0)[:-9],str(every_range_right1)[:-9]))
+						print("cron: ", str(every_range_left0)[:-9],str(every_range_right1)[:-9], "\n")
 
 
 				elif to_do_list[0] == "date_to_the_left":
@@ -247,7 +269,8 @@ def split_time_ranges_and_add_job(list_exceptions, list_every):
 					every_range1 = every_range1.replace(hour=int(every_endtime_hour), minute=int(every_endtime_minute))
 
 					# cron job should end at every_range0 and start again at date_time_end2
-					cron_start_stop[j].append((str(date_time_start),str(every_range1)))
+					cron_start_stop[j].append((str(date_start),str(every_range1)[:-9]))
+					print("cron: ", str(date_time_start),str(every_range1)[:-9], "\n")
 
 
 					## add only one exception if there is not pause between the jobs
@@ -258,6 +281,7 @@ def split_time_ranges_and_add_job(list_exceptions, list_every):
 					else:
 						new_list_exceptions.append(sorted_list_exceptions[i].replace("T", " "))
 						new_list_exceptions.append(str(every_range0)+" - "+str(every_range1))
+						
 					
 
 				elif to_do_list[0] == "date_to_the_right":
@@ -270,7 +294,8 @@ def split_time_ranges_and_add_job(list_exceptions, list_every):
 
 
 					# cron job should end at every_range0 and start again at date_time_end2
-					cron_start_stop[j].append((str(every_range0),str(date_time_end2)))
+					cron_start_stop[j].append((str(every_range0)[:-9],str(date_end)))
+					print("cron: ", str(every_range0)[:-9],str(date_time_end), "\n")
 
 
 					## add only one exception if there is not pause between the jobs
@@ -281,20 +306,24 @@ def split_time_ranges_and_add_job(list_exceptions, list_every):
 					else:
 						new_list_exceptions.append(str(every_range0)+" - "+str(every_range1))
 						new_list_exceptions.append(sorted_list_exceptions[i].replace("T", " "))
-	
+
 				else:
 					print("I'm adding cron and exception in else.")
 					new_list_exceptions.append(sorted_list_exceptions[i].replace("T", " "))
-					cron_start_stop[j].append((str(date_time_start),str(date_time_end)))
+					cron_start_stop[j].append((str(date_start),str(date_end)))
+					print("cron: ",str(date_time_start),str(date_time_end), "\n")
 
 		if(found_no_intersection):
 			print("I'm adding exception but there was no intersection.")
 			new_list_exceptions.append(sorted_list_exceptions[i].replace("T", " "))
-			cron_start_stop[j].append((str(date_time_start),str(date_time_end)))
 				
 	print("cron_start_stop: ",cron_start_stop)
 	print("new_list_exceptions: ",new_list_exceptions, "\n")
 
+	for i in range(0,len(cron_start_stop)):
+		cron_start_stop[i] = sorted(list(set(cron_start_stop[i])))
+
+	print("cron_start_stop setted and sorted: ",cron_start_stop)
 	return cron_start_stop, new_list_exceptions
 
 
