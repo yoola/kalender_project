@@ -19,7 +19,7 @@ import random
 
 from api.help_funcs import get_day_of_Every, change_24_to_00, every_change_24_to_00, split_intervall_days
 from api.help_funcs import check_insect_with_dates_list, check_insect_with_every_list
-from api.make_job_list import split_time_ranges_and_add_job, add_cron_job
+from api.make_job_list import split_time_ranges_and_make_job_list
 from api.add_my_jobs import start_job, stop_job, randID, add_all_jobs
 # If you want all scheduled jobs to use this store by default,
 # use the name 'default' instead of 'djangojobstore'.
@@ -131,7 +131,7 @@ class ScheduleList(APIView):
 
 			list_exceptions = [str(i) for i in list_exceptions]
 			sorted_exception_list = sorted(list_exceptions)
-			cron_start_stop, new_list_exceptions = split_time_ranges_and_add_job(list_exceptions, list_every)
+			cron_start_stop, new_list_exceptions = split_time_ranges_and_make_job_list(list_exceptions, list_every)
 
 			add_all_jobs(cron_start_stop, list_every, new_list_exceptions,scheduler)
 

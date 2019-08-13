@@ -6,8 +6,6 @@ import string
 import random
 
 from api.help_funcs import every_change_24_to_00, split_intervall_days
-from api.make_job_list import add_cron_job
-
 
 
 def start_job():
@@ -19,6 +17,23 @@ def stop_job():
 
 def randID(size=6, chars=string.ascii_uppercase + string.digits):
 	return ''.join(random.choice(chars) for _ in range(size))
+
+
+def add_cron_job(cron_day, stop_date):
+
+	days_= ["mon","tue","wed","thu","fri","sat","sun"]
+	cron_day = days_.index(cron_day)
+	today_ = datetime.date.today()
+
+	date1 =  datetime.datetime.strptime(str(today_), '%Y-%m-%d')
+	date2 =  datetime.datetime.strptime(stop_date, '%Y-%m-%d')-datetime.timedelta(days=1)
+	time_range = DateTimeRange(date1, date2)
+
+	for value in time_range.range(datetime.timedelta(days=1)):
+		if cron_day == value.weekday():
+			return True
+
+	return False
 
 
 def add_all_jobs(cron_start_stop, list_every, new_list_exceptions,scheduler):
@@ -47,9 +62,6 @@ def add_all_jobs(cron_start_stop, list_every, new_list_exceptions,scheduler):
 		endhour_ = endtime_[0:2]
 		startminute_ = starttime_[3:6]
 		endminute_ = endtime_[3:6]
-
-		
-		
 		
 		#add all other jobs which have only a start_date and  an end_date
 		if len(cron_start_stop[i])>=1:
@@ -63,16 +75,15 @@ def add_all_jobs(cron_start_stop, list_every, new_list_exceptions,scheduler):
 
 					stop_here = cron_start_stop[i][j][0]					
 					print("stop_here in j=",j, stop_here,"\n")
+					sep_list = split_intervall_days(list_every[i][0])
 
-					if(add_cron_job(list_every[i][0],stop_here[0:10])): #check if every day job can at least run one time before it already ends
+					if(add_cron_job(sep_list[0],stop_here[0:10])): #check if every day job can at least run one time before it already ends
 
 						if "-" in list_every[i][0]:
-							seperate_days_list = split_intervall_days(list_every[i][0])
-
-							scheduler.add_job(start_job, 'cron', id = "start_job_"+str(seperate_days_list[0])+"_"+randID(), day_of_week=seperate_days_list[0], hour=starthour_, minute=startminute_, end_date= str(stop_here))
-							scheduler.add_job(stop_job, 'cron', id = "stop_job_"+str(seperate_days_list[1])+randID(), day_of_week=seperate_days_list[1], hour=endhour_, minute=endminute_, end_date= str(stop_here))
+						
+							scheduler.add_job(start_job, 'cron', id = "start_job_"+str(sep_list[0])+"-"+str(sep_list[1])+"_"+randID(), day_of_week=sep_list[0], hour=starthour_, minute=startminute_, end_date= str(stop_here))
+							scheduler.add_job(stop_job, 'cron', id = "stop_job_"+str(sep_list[0])+"-"+str(sep_list[1])+randID(), day_of_week=sep_list[1], hour=endhour_, minute=endminute_, end_date= str(stop_here))
 						else:
-
 
 							scheduler.add_job(start_job, 'cron', id = "start_job_"+str(list_every[i][0])+"_"+randID(), day_of_week=str(list_every[i][0]), hour=starthour_, minute=startminute_, end_date= str(stop_here))
 							scheduler.add_job(stop_job, 'cron', id = "stop_job_"+str(list_every[i][0])+"_"+randID(), day_of_week=str(list_every[i][0]), hour=endhour_, minute=endminute_, end_date= str(stop_here))
@@ -89,10 +100,10 @@ def add_all_jobs(cron_start_stop, list_every, new_list_exceptions,scheduler):
 					
 
 					if "-" in list_every[i][0]:
-						seperate_days_list = split_intervall_days(list_every[i][0])
+						sep_list = split_intervall_days(list_every[i][0])
 
-						scheduler.add_job(start_job, 'cron', id = "start_job_"+str(seperate_days_list[0])+"_"+randID(), day_of_week=seperate_days_list[0], hour=starthour_, minute=startminute_, start_date = start_here, end_date = stop_here)
-						scheduler.add_job(stop_job, 'cron', id = "stop_job_"+str(seperate_days_list[1])+"_"+randID(), day_of_week=seperate_days_list[1], hour=endhour_, minute=endminute_, start_date = start_here, end_date = stop_here)
+						scheduler.add_job(start_job, 'cron', id = "start_job_"+str(sep_list[0])+"-"+str(sep_list[1])+"_"+randID(), day_of_week=sep_list[0], hour=starthour_, minute=startminute_, start_date = start_here, end_date = stop_here)
+						scheduler.add_job(stop_job, 'cron', id = "stop_job_"+str(sep_list[0])+"-"+str(sep_list[1])+"_"+randID(), day_of_week=sep_list[1], hour=endhour_, minute=endminute_, start_date = start_here, end_date = stop_here)
 					else:
 
 						scheduler.add_job(start_job, 'cron', id = "start_job_"+str(list_every[i][0])+"_"+randID(), day_of_week=list_every[i][0], hour=starthour_, minute=startminute_, start_date = start_here, end_date = stop_here)
@@ -104,10 +115,10 @@ def add_all_jobs(cron_start_stop, list_every, new_list_exceptions,scheduler):
 					
 
 			if "-" in list_every[i][0]:
-				seperate_days_list = split_intervall_days(list_every[i][0])
+				sep_list = split_intervall_days(list_every[i][0])
 
-				scheduler.add_job(start_job, 'cron', id = "start_job_"+str(seperate_days_list[0])+"_"+randID(), day_of_week=seperate_days_list[0], hour=starthour_, minute=startminute_, start_date = str(start_here))
-				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+str(seperate_days_list[0])+"_"+randID(), day_of_week=seperate_days_list[1], hour=endhour_, minute=endminute_, start_date = str(start_here))
+				scheduler.add_job(start_job, 'cron', id = "start_job_"+str(sep_list[0])+"-"+str(sep_list[1])+"_"+randID(), day_of_week=sep_list[0], hour=starthour_, minute=startminute_, start_date = str(start_here))
+				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+str(sep_list[0])+"-"+str(sep_list[1])+"_"+randID(), day_of_week=sep_list[1], hour=endhour_, minute=endminute_, start_date = str(start_here))
 			else:
 				scheduler.add_job(start_job, 'cron', id = "start_job_"+str(list_every[i][0])+"_"+randID(), day_of_week=list_every[i][0], hour=starthour_, minute=startminute_,  start_date = str(start_here))
 				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+str(list_every[i][0])+"_"+randID(), day_of_week=list_every[i][0], hour=endhour_, minute=endminute_, start_date = str(start_here))
@@ -117,10 +128,10 @@ def add_all_jobs(cron_start_stop, list_every, new_list_exceptions,scheduler):
 			print("Adding cron job \"Every "+str(list_every[i][0])+"\" without intersections of exception days.")
 
 			if "-" in list_every[i][0]:
-				seperate_days_list = split_intervall_days(list_every[i][0])
+				sep_list = split_intervall_days(list_every[i][0])
 
-				scheduler.add_job(start_job, 'cron', id = "start_job_"+str(seperate_days_list[0])+"_"+randID(), day_of_week=seperate_days_list[0], hour=starthour_, minute=startminute_)
-				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+str(seperate_days_list[0])+"_"+randID(), day_of_week=seperate_days_list[1], hour=endhour_, minute=endminute_)
+				scheduler.add_job(start_job, 'cron', id = "start_job_"+str(sep_list[0])+"-"+str(sep_list[1])+"_"+randID(), day_of_week=sep_list[0], hour=starthour_, minute=startminute_)
+				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+str(sep_list[0])+"-"+str(sep_list[1])+"_"+randID(), day_of_week=sep_list[1], hour=endhour_, minute=endminute_)
 			else:
 				scheduler.add_job(start_job, 'cron', id = "start_job_"+str(list_every[i][0])+"_"+randID(), day_of_week=str(list_every[i][0]), hour=starthour_, minute=startminute_)
 				scheduler.add_job(stop_job, 'cron', id = "stop_job_"+str(list_every[i][0])+"_"+randID(), day_of_week=str(list_every[i][0]), hour=endhour_, minute=endminute_)
@@ -130,10 +141,15 @@ def add_all_jobs(cron_start_stop, list_every, new_list_exceptions,scheduler):
 
 	for i in new_list_exceptions:
 
-		first_ = str(i)[0:19]
-		first_ = first_.replace('T', ' ')
-		second_ = str(i)[22:42]
-		second_ = second_.replace('T', ' ')
+		print("len(i): ", len(i))
+
+		if(len(i)==41):	
+			first_ = str(i)[0:19]
+			first_ = first_.replace('T', ' ')
+			second_ = str(i)[22:42]
+			second_ = second_.replace('T', ' ')
+		else:
+			print("No available time format.")
 
 		first_ = datetime.datetime.strptime(first_, '%Y-%m-%d %H:%M:%S')
 		second_ = datetime.datetime.strptime(second_, '%Y-%m-%d %H:%M:%S')
