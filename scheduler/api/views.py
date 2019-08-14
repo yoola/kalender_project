@@ -77,8 +77,6 @@ class ScheduleList(APIView):
 
 			for d in range(0,len(startday_list)):
 
-
-
 				if not startday_list[d].startswith('Every'):
 
 					if not endday_list[d]:
@@ -104,9 +102,9 @@ class ScheduleList(APIView):
 
 						stopDate = str(endday_list[d])+str(' ')+str(endtime_list[d])+str(':00')
 						stopDate = change_24_to_00(stopDate)
-						
 
 						stopDate_intervall = str(startday_list[d])+str(' ')+str(endtime_list[d])+str(':00')
+						stopDate_intervall = change_24_to_00(stopDate_intervall)
 
 						time_range1 = DateTimeRange(startDate, startDate_intervall)
 						time_range2 = DateTimeRange(stopDate_intervall, stopDate)
