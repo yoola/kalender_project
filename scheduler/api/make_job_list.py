@@ -1,7 +1,7 @@
 import datetime
 from datetime import date
 from datetimerange import DateTimeRange
-from api.help_funcs import split_intervall_days, check_insect_with_dates_list
+from api.help_funcs import split_intervall_days
 #import arrow --> might be helpful with date conversions
 
 
@@ -63,8 +63,7 @@ def get_every_number_list(every_numbers,date_numbers):
 
 def check_intervalls_overlap(date_numbers, every_numbers):
 
-	if date_numbers[0] == every_numbers[0] and date_numbers[1] == every_numbers[1]:
-		return "all_the_same"
+	
 	if date_numbers[1] == every_numbers[0] and date_numbers[1] < every_numbers[1]:
 		return "date_to_the_left" # 2_same_date_to_the_left
 	if date_numbers[1] == every_numbers[0] and date_numbers[1] == every_numbers[1]:
@@ -73,12 +72,12 @@ def check_intervalls_overlap(date_numbers, every_numbers):
 		return "date_to_the_right" # 2_same_date_to_the_right
 	if date_numbers[0] == every_numbers[1] and every_numbers[0] == date_numbers[0]:
 		return "date_to_the_right" # 3_same_date_to_the_right
-
 	if every_numbers[0] < date_numbers[1] and date_numbers[1] < every_numbers[1] and date_numbers[0]< every_numbers[0]:
 		return "date_to_the_left"
 	if date_numbers[0] < every_numbers[1] and every_numbers[1] < date_numbers[1] and every_numbers[0]< date_numbers[0]:
 		return "date_to_the_right"
-	
+	if date_numbers[0] == every_numbers[0] and date_numbers[1] == every_numbers[1]:
+		return "all_the_same"
 	if every_numbers[0] < date_numbers[0] and date_numbers[1] < every_numbers[1] and every_numbers[0]<date_numbers[1]:
 		return "date_inside"
 	if date_numbers[0] < every_numbers[0] and every_numbers[1] < date_numbers[1]:
@@ -278,7 +277,7 @@ def split_time_ranges_and_make_job_list(list_exceptions, list_every):
 
 					elif date_starttime == "00:00" and check4_same_day==0:
 						new_list_exceptions.append(sorted_list_exceptions[i].replace("T", " "))
-						every_range1 = date_time_start2.replace(hour=int(every_endtime_hour), minute=int(every_endtime_minute))
+						every_range1 = date_time_start2.replace(hour=int(every_endtime_hour), minute=int(every_endtime_minute)) - datetime.timedelta(days=1)
 						temp_exceptions[j].append(str(every_range0)+" - "+str(every_range1))
 					# add two exceptions if there is a break between the jobs
 					else:

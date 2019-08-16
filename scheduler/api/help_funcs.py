@@ -1,7 +1,7 @@
 import datetime
 from datetimerange import DateTimeRange
 
-def check_insect_with_dates_list(list_times,test_range):
+def check_intersect_with_dates_list(list_times,test_range):
 
 	print("list_times 0: ",list_times)
 
@@ -47,6 +47,15 @@ def check_insect_with_dates_list(list_times,test_range):
 	return list_times
 
 
+def join_list_dates(list_exceptions):
+
+	for i in list_exceptions:
+		print(i)
+
+	print("list_exceptions: ", list_exceptions)
+
+	return list_exceptions
+	
 
 def split_intervall_days(day):
 	if "-" in day:
@@ -67,22 +76,29 @@ def change_24_to_00(date1):
 	return date1
 
 
-def every_change_24_to_00(test_day,test_day_start, test_day_end):
+def every_change_24_to_00_end(test_day,test_day_start, test_day_end):
 
 	list_days = ["mon","tue","wed","thu","fri","sat","sun","mon"]
 	splitted_day = split_intervall_days(test_day)
+
 	if len(splitted_day) == 2:
 		test_day = splitted_day[1]
+		index = list_days.index(test_day)
+		test_day = splitted_day[0] +"-"+ list_days[index+1]
+		test_day_end = "00:00"
 	else:
 		test_day = splitted_day[0]
-
-	index = list_days.index(test_day)
-	test_day = test_day +"-"+ list_days[index+1]
-	test_day_end = "00:00"
+		index = list_days.index(test_day)
+		test_day = test_day +"-"+ list_days[index+1]
+		test_day_end = "00:00"
 
 	return (test_day, test_day_start, test_day_end)
 
-#print(every_change_24_to_00("mon","08:00","24:00"))
+
+
+# Also remember to cancel it in add_my_jobs
+
+#print(every_change_24_to_00_end("mon","08:00","24:00"))
 
 
 
@@ -106,8 +122,8 @@ def get_day_of_Every(everyday):
 def are_proceeding_days(test_day, day):
 
 	print("test_day: ", test_day)
-	if isinstance(day, list):
-		day = day[0]
+	# if isinstance(day, list):
+	# 	day = day[0]
 	print("day: ", day)
 	
 	if test_day == "mon":
@@ -263,7 +279,7 @@ def join_intervall_days(test_day, test_day_start, test_day_end, list_days, day_s
 
 
 
-def check_insect_with_every_list(test_day, test_day_start, test_day_end, List_days):
+def check_intersect_with_every_list(test_day, test_day_start, test_day_end, List_days):
 
 	not_set = True
 	index_set = 0
@@ -272,7 +288,7 @@ def check_insect_with_every_list(test_day, test_day_start, test_day_end, List_da
 
 	if not List_days:
 		print("List was empty.\n")
-		List_days.append((test_day,test_day_start, test_day_end))
+		List_days.append((test_day, test_day_start, test_day_end))
 	else:
 
 		for i in range(0,len(List_days)):
@@ -342,6 +358,12 @@ def check_insect_with_every_list(test_day, test_day_start, test_day_end, List_da
 	for i in indices_to_del:
 		del List_days[i]
 
-	print("List_days: ",List_days)
+	# process List_days for 24:00 entries
+	print("List_days0: ",List_days)
+	if List_days:
+		for i in range(0,len(List_days)-1):
+			if List_days[i][2] == "24:00":
+				List_days[i] = every_change_24_to_00_end(List_days[i][0], List_days[i][1], List_days[i][2])
+	print("List_days1: ",List_days)
 
 	return List_days
