@@ -10,6 +10,7 @@ class Schedule(object):
 		self.starttime = starttime
 		self.endtime = endtime
 
+
 # Serializers define the API representation.
 class ScheduleSerializer(serializers.Serializer):
 

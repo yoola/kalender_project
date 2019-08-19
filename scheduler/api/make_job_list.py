@@ -15,6 +15,25 @@ def split_time_range(time_range):
     return list_ranges
 
 
+"""
+To compare weekdays with days we will convert them into numbers:
+	-> e.g. mon = 0, tue = 1,..., sun=6
+	-> e.g. "2019-11-20" = 2 (because it is a Wednesday and wed = 2)
+	-> For intervals: 
+		- "tue - fri" becomes [1,4]
+		- "2019-11-20" till "2019-11-23" becomes [2,5] (for wed-sat)
+	-> For longer intervals:
+		- e.g. "2019-11-16" till "2019-11-29" it becomes [4,17]
+			-> Why? The second entry is 4+13 and 13 is the difference between the dates
+		- We will now check 
+			... do [1,4] and [4,17] intersect?
+			... do [1+7,4+7] and [4,17] intersect?  
+			... do [1+7+7,4+7+7] and [4,17] intersect? 
+			... until the first entry of the every day intervall is not anymore in [4,17]
+			.. so it will stop checking at [22,25]
+"""
+
+
 def convert_date_to_number(time_range_str):
     list_ranges = split_time_range(time_range_str)
 
@@ -74,7 +93,6 @@ def check_intervalls_overlap(date_numbers, every_numbers):
         return "date_inside"
     if date_numbers[0] < every_numbers[0] and every_numbers[1] < date_numbers[1]:
         return "all_the_same"  # date_outside
-
     if date_numbers[0] == every_numbers[0] and every_numbers[1] < date_numbers[1]:
         return "all_the_same"  # start_same_end_date_right
     if date_numbers[0] == every_numbers[0] and date_numbers[1] < every_numbers[1]:
@@ -85,6 +103,22 @@ def check_intervalls_overlap(date_numbers, every_numbers):
         return "date_to_the_right"  # end_same_start_date_right
 
     return "no_intersection"
+
+
+""" There might be more than one exception in an every day job.
+Since me make the rest of an every day job also to an exception,
+we will only keep the every day exceptions which intersect.
+E.g.
+- We have an every day job from "tue-thu"
+- We have an exception on "tue" (e.g. "2019-08-20")
+	... so "tue" is added as an exception in new_list_exceptions
+	... and "wed-thu" is added as an exception in temp_exceptions
+- Now we also have and exception on "thu" (e.g. "2019-08-20")
+	... so "thu" is added as an exception in new_list_exceptions
+	.... and "tue-wed" is added as an exception in temp_exceptions
+- We now have "wed-thu" and "tue-wed" in our temp_exception list 
+  which will only keep the intersection of those intervals as an exception which is "wed"(nesday)
+"""
 
 
 def process_exception_list(temp_exceptions):
@@ -120,9 +154,16 @@ def process_exception_list(temp_exceptions):
 
 
 """ check list_every and sorted list_exceptions for intersections
-if intersection: make all cron jobs during that time to exceptions
-add cron job until first exception day, add exceptions
-get new exception and look again for intersections
+
+if intersection: 
+	- store exception day in new_list_exception
+	- make all cron jobs during that time to exceptions and store them in the list temp_exceptions
+	- store the start day and the end day of the exception in cron_start_stop
+
+	- Nothing will be added to any list if a every day job matches with an exception job
+
+If no intersection:
+	- only the exception dates will be added to new_list_exceptions
 """
 
 
@@ -287,10 +328,6 @@ def split_time_ranges_and_make_job_list(list_exceptions, list_every):
             print("I'm adding exception but there was no intersection.")
             new_list_exceptions.append(sorted_list_exceptions[i].replace("T", " "))
         found_no_intersection = True
-
-    print("cron_start_stop: ", cron_start_stop)
-    print("new_list_exceptions: ", new_list_exceptions, "\n")
-    print("temp_exceptions: ", temp_exceptions, "\n")
 
     for i in range(0, len(cron_start_stop)):
         cron_start_stop[i] = sorted(list(set(cron_start_stop[i])))

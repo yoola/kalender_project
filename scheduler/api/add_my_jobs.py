@@ -253,7 +253,7 @@ def add_all_jobs(cron_start_stop, list_every, new_list_exceptions, scheduler):
             if not day1 == day2:
                 day1 = day1 + "-" + day2
             
-            scheduler.add_job(start_job, id="start_job_"+ day1 + "_" + randID(), trigger='date', next_run_time=str(first))
-            scheduler.add_job(stop_job, id="stop_job_"+ day1 + "_" + randID(), trigger='date', next_run_time=str(second))
+            scheduler.add_job(start_job, id="start_job_" + day1 + "_" + randID(), trigger='date', next_run_time=str(first))
+            scheduler.add_job(stop_job, id="stop_job_" + day1 + "_" + randID(), trigger='date', next_run_time=str(second))
         else:
             print("No available time format.")

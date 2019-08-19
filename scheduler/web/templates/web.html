@@ -15,25 +15,25 @@
 
 		    angular.module('app').controller('controller', function($scope, $http) {
 
-		    	// generating time intervall array
+		    	// generating time interval array
 		    	var x = 5; //minutes interval
-				var steptimes = []; // time array
+				var step_times = []; // time array
 				var tt = 0; // start time
 				
 				//loop to increment the time and push results in array
 				for (var i=0;tt<24*60; i++) {
 					var hh = Math.floor(tt/60); // getting hours of day in 0-24 format
 					var mm = (tt%60); // getting minutes of the hour in 0-55 format
-					steptimes[i] = ("0" + (hh % 24)).slice(-2) + ':' + ("0" + mm).slice(-2); //pushing data 	in array in [00:00 - 12:00 AM/PM format]
+					step_times[i] = ("0" + (hh % 24)).slice(-2) + ':' + ("0" + mm).slice(-2);
 					tt = tt + x;
 				}
-				steptimes.push("24:00");
+				step_times.push("24:00");
 
 
 
 		        $scope.sliderOptions = {
 
-		            stepsArray: steptimes,
+		            stepsArray: step_times,
 		            autoHideLimitLabels: true,
 		            noSwitching: true
 		        }
@@ -124,8 +124,6 @@
 		        $scope.submit = function(data){
 
 		        	// var alldata = []
-
-
 		        	// for (var i=0;i<data.length; i++) {
 		        	// 	alldata[i] = JSON.stringify({startday:data[i].startday, endday:data[i].endday, starttime:data[i].starttime, endtime:data[i].endtime});
 		        	// }

@@ -1,5 +1,8 @@
 import datetime
 
+""" This functions joins exception date if they intersect
+"""
+
 
 def check_intersect_with_dates_list(list_times, test_range):
     print("list_times 0: ", list_times)
@@ -72,6 +75,10 @@ def change_24_to_00(date1):
     else:
         date1 = datetime.datetime.strptime(date1, '%Y-%m-%d %H:%M:%S')
     return date1
+
+
+""" This function will convert mon, 06:00, 24:00 to mon-tue, 06:00, 00:00
+"""
 
 
 def every_change_24_to_00_end(test_day, test_day_start, test_day_end):
@@ -168,6 +175,11 @@ def are_proceeding_days(test_day, day):
     return None
 
 
+""" When there are two same days for comparison, e.g. wed-thu and wed,
+then this function checks if their start and end times also intersect
+"""
+
+
 def is_same_day_intersection(test_day_start, test_day_end, day_start, day_end):
     if day_end >= test_day_end >= day_start >= test_day_start:
         return True
@@ -215,7 +227,7 @@ def join_days(test_day, test_day_start, test_day_end, list_day, day_start, day_e
 
 def join_intervall_days(test_day, test_day_start, test_day_end, list_days, day_start, day_end):
     if len(list_days) == 2:
-        print("len: ", len(list_days))
+
         if join_days(test_day, test_day_start, test_day_end, list_days[0], day_start,
                      day_end) == "join_with_proceeding_day":
             list_days[0] = test_day
@@ -257,6 +269,18 @@ def join_intervall_days(test_day, test_day_start, test_day_end, list_days, day_s
     return (list_days, day_start, day_end)
 
 
+"""
+This function checks if a day intersects with an already existing interval or not
+
+- It extends the interval by that day if they intersect otherwise it makes a new list entry
+-> E.g. mon-tues, 04:00, 24:00 and wed, 00:00, 15:15, then the list will
+   contain mon-wed, 04:00, 15:15
+
+-> E.g. mon-tues, 04:00, 24:00 and wed, 10:00, 15:15, then the list will 
+  contain mon-tues, 04:00, 24:00 and wed, 00:00, 15:15
+"""
+
+
 def check_intersect_with_every_list(test_day, test_day_start, test_day_end, List_days):
     not_set = True
     index_set = 0
@@ -281,11 +305,7 @@ def check_intersect_with_every_list(test_day, test_day_start, test_day_end, List
                                       List_days[i][2]) == "dont_join"):
 
                     no_intersection = False
-
                     print("This is an intersection.\n")
-                    print("The intersecting days are: ")
-                    print("Test day: ", test_day, test_day_start, test_day_end)
-                    print("List days: ", list_days, List_days[i][1], List_days[i][2])
 
                     if not_set:
                         print("First intersection.\n")
@@ -296,7 +316,6 @@ def check_intersect_with_every_list(test_day, test_day_start, test_day_end, List
                         test_day_end = List_days[i][2]
                         not_set = False
                         index_set = i
-                    # print("First intersect test_range: ", test_range)
 
                     else:
                         print("More intersections.\n")
