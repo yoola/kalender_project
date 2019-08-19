@@ -121,10 +121,10 @@ def get_day_of_Every(everyday):
 
 def are_proceeding_days(test_day, day):
 
-	print("test_day: ", test_day)
+	#print("test_day: ", test_day)
 	# if isinstance(day, list):
 	# 	day = day[0]
-	print("day: ", day)
+	#print("day: ", day)
 	
 	if test_day == "mon":
 		if day == "sun":
@@ -305,6 +305,9 @@ def check_intersect_with_every_list(test_day, test_day_start, test_day_end, List
 					no_intersection = False
 
 					print("This is an intersection.\n")
+					print("The intersecting days are: ")
+					print("Test day: ", test_day, test_day_start, test_day_end)
+					print("List days: ", list_days, List_days[i][1], List_days[i][2])
 
 					if not_set:
 						print("First intersection.\n")
@@ -349,21 +352,11 @@ def check_intersect_with_every_list(test_day, test_day_start, test_day_end, List
 						test_day_end = List_days[index_set][2]
 						indices_to_del.append(i)
 
-
-
 		if(no_intersection):
 			print("No intersection\n")
 			List_days.append((test_day,test_day_start, test_day_end))
 
 	for i in indices_to_del:
 		del List_days[i]
-
-	# process List_days for 24:00 entries
-	print("List_days0: ",List_days)
-	if List_days:
-		for i in range(0,len(List_days)-1):
-			if List_days[i][2] == "24:00":
-				List_days[i] = every_change_24_to_00_end(List_days[i][0], List_days[i][1], List_days[i][2])
-	print("List_days1: ",List_days)
 
 	return List_days

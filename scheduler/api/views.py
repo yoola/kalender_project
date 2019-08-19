@@ -11,7 +11,7 @@ from datetimerange import DateTimeRange
 
 
 
-from api.help_funcs import get_day_of_Every, change_24_to_00, split_intervall_days, join_list_dates
+from api.help_funcs import get_day_of_Every, change_24_to_00, every_change_24_to_00_end, split_intervall_days, join_list_dates
 from api.help_funcs import check_intersect_with_dates_list, check_intersect_with_every_list
 from api.make_job_list import split_time_ranges_and_make_job_list, process_exception_list
 from api.add_my_jobs import start_job, stop_job, randID, add_all_jobs
@@ -25,18 +25,8 @@ scheduler.start()
 
 
 class ScheduleList(APIView):
-	"""
-	this class does this and this
-	"""
 
-
-    # def get(self, request):
-    # 	schedule = Schedule.objects.all()
-    # 	#schedule.objects.filter(pk=schedule.startday).update(starttime=schedule.starttime, endtime=schedule.endtime)
-    # 	serializer = ScheduleSerializer(schedule, many= True, context={'request':request})
-    # 	return Response(serializer.data)
-
-    def post(self, request, format=None):
+    def post(self,request):
         print("I'm in POST")
         print("Request body: ", request.body)
         print("Request data: ", request.data)
@@ -46,14 +36,11 @@ class ScheduleList(APIView):
         list_exceptions = []
         list_every = []
 
-        # starttime_list = []
-
         if serializer.is_valid():
 
             print("Data is valid")
 
             # serializer.save()
-
             startday_list = []
             endday_list = []
             starttime_list = []
@@ -101,14 +88,12 @@ class ScheduleList(APIView):
                         time_range1 = DateTimeRange(startDate, startDate_intervall)
                         time_range2 = DateTimeRange(stopDate_intervall, stopDate)
 
-                        print("!!!!!!!time_range1: ", time_range1)
-                        print("!!!!!!!time_range2: ", time_range2)
 
-                        # Go in 1 day steps from start date to end date because start and end time is valid for every date between the intervall days
+                        # Go in 1 day steps from start date to end date because start and end time is valid for
+                        # every date between the interval days
                         for i1, j1 in zip(time_range1.range(datetime.timedelta(days=1)),
                                           time_range2.range(datetime.timedelta(days=1))):
                             test_range = DateTimeRange(i1, j1)
-                            print("!!!!!!!test_range: ", test_range)
 
                             # check for intersections of time ranges
                             list_exceptions = check_intersect_with_dates_list(list_exceptions, test_range)
@@ -122,17 +107,23 @@ class ScheduleList(APIView):
                     list_every = check_intersect_with_every_list(get_day_of_Every(startday_list[d]), starttime_list[d],
                                                                  endtime_list[d], list_every)
 
+            # process List_days for 24:00 entries and change it to "12 am the next day"
+            if list_every:
+            	for i in range(0, len(list_every)):
+            		if list_every[i][2] == "24:00":
+            			list_every[i] = every_change_24_to_00_end(list_every[i][0], list_every[i][1], list_every[i][2])
+
             list_exceptions = [str(i) for i in list_exceptions]
             sorted_exception_list = sorted(list_exceptions)
-            cron_start_stop, new_list_exceptions = split_time_ranges_and_make_job_list(list_exceptions, list_every)
+            cron_start_stop, new_list_exceptions = split_time_ranges_and_make_job_list(sorted_exception_list, list_every)
 
-            # new_list_exceptions = sorted(list(set(new_list_exceptions)))
+            new_list_exceptions = sorted(list(set(new_list_exceptions)))
 
             add_all_jobs(cron_start_stop, list_every, new_list_exceptions, scheduler)
 
             scheduler.print_jobs()
             register_events(scheduler)
-            # scheduler.resume()
+            scheduler.resume()
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 

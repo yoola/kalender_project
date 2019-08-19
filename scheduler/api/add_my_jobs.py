@@ -5,7 +5,7 @@ from datetimerange import DateTimeRange
 import string
 import random
 
-from api.help_funcs import every_change_24_to_00_end, split_intervall_days
+from api.help_funcs import split_intervall_days
 
 
 def start_job():
@@ -54,8 +54,8 @@ def add_all_jobs(cron_start_stop, list_every, new_list_exceptions,scheduler):
 
 		print("iiiiii-----------------new i: ",i,", ",list_every[i],"-------------------")
 	
-		if  list_every[i][2].startswith("24:00"):
-			list_every[i] = every_change_24_to_00(list_every[i][0], list_every[i][1], list_every[i][2])
+		# if  list_every[i][2].startswith("24:00"):
+		# 	list_every[i] = every_change_24_to_00_end(list_every[i][0], list_every[i][1], list_every[i][2])
 
 		starttime_ = list_every[i][1]
 		endtime_ = list_every[i][2]	
