@@ -1,7 +1,7 @@
 import datetime
 # import arrow --> might be helpful with date conversions
 from datetimerange import DateTimeRange
-from api.help_funcs import split_intervall_days
+from api.help_funcs import split_interval_days
 
 
 def split_time_range(time_range):
@@ -27,7 +27,7 @@ def convert_date_to_number(time_range_str):
 
 def convert_every_to_number(day_range_str):
     days_ = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
-    list_splitted = split_intervall_days(day_range_str[0])
+    list_splitted = split_interval_days(day_range_str[0])
 
     if len(list_splitted) == 2:
         new_list = [days_.index(list_splitted[0]), days_.index(list_splitted[1])]
@@ -112,10 +112,10 @@ def process_exception_list(temp_exceptions):
                 if no_intersection:
                     new_temp_exceptions[i].append(temp_exceptions[i][j])
 
-    for i in range(0,len(new_temp_exceptions)):
-    	for j in range(0,len(new_temp_exceptions[i])):
-    		if str(new_temp_exceptions[i][j][0:19]) == str(new_temp_exceptions[i][j][22:41]):
-    			new_temp_exceptions[i].remove(new_temp_exceptions[i][j])
+    for i in range(0, len(new_temp_exceptions)):
+        for j in range(0, len(new_temp_exceptions[i])):
+            if str(new_temp_exceptions[i][j][0:19]) == str(new_temp_exceptions[i][j][22:41]):
+                new_temp_exceptions[i].remove(new_temp_exceptions[i][j])
     return new_temp_exceptions
 
 
