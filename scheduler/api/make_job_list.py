@@ -17,20 +17,20 @@ def split_time_range(time_range):
 
 """
 To compare weekdays with days we will convert them into numbers:
-	-> e.g. mon = 0, tue = 1,..., sun=6
-	-> e.g. "2019-11-20" = 2 (because it is a Wednesday and wed = 2)
-	-> For intervals: 
-		- "tue - fri" becomes [1,4]
-		- "2019-11-20" till "2019-11-23" becomes [2,5] (for wed-sat)
-	-> For longer intervals:
-		- e.g. "2019-11-16" till "2019-11-29" it becomes [4,17]
-			-> Why? The second entry is 4+13 and 13 is the difference between the dates
-		- We will now check 
-			... do [1,4] and [4,17] intersect?
-			... do [1+7,4+7] and [4,17] intersect?  
-			... do [1+7+7,4+7+7] and [4,17] intersect? 
-			... until the first entry of the every day intervall is not anymore in [4,17]
-			.. so it will stop checking at [22,25]
+-> e.g. mon = 0, tue = 1,..., sun=6
+-> e.g. "2019-11-20" = 2 (because it is a Wednesday and wed = 2)
+-> For intervals: 
+    - "tue - fri" becomes [1,4]
+    - "2019-11-20" till "2019-11-23" becomes [2,5] (for wed-sat)
+-> For longer intervals:
+    - e.g. "2019-11-16" till "2019-11-29" it becomes [4,17]
+    -> Why? The second entry is 4+13 and 13 is the difference between the dates
+- We will now check 
+    ... do [1,4] and [4,17] intersect?
+... do [1+7,4+7] and [4,17] intersect?  
+... do [1+7+7,4+7+7] and [4,17] intersect? 
+... until the first entry of the every day intervall is not anymore in [4,17]
+... so it will stop checking at [22,25]
 """
 
 
@@ -111,11 +111,11 @@ we will only keep the every day exceptions which intersect.
 E.g.
 - We have an every day job from "tue-thu"
 - We have an exception on "tue" (e.g. "2019-08-20")
-	... so "tue" is added as an exception in new_list_exceptions
-	... and "wed-thu" is added as an exception in temp_exceptions
+    ... so "tue" is added as an exception in new_list_exceptions
+    ... and "wed-thu" is added as an exception in temp_exceptions
 - Now we also have and exception on "thu" (e.g. "2019-08-20")
-	... so "thu" is added as an exception in new_list_exceptions
-	.... and "tue-wed" is added as an exception in temp_exceptions
+    ... so "thu" is added as an exception in new_list_exceptions
+    .... and "tue-wed" is added as an exception in temp_exceptions
 - We now have "wed-thu" and "tue-wed" in our temp_exception list 
   which will only keep the intersection of those intervals as an exception which is "wed"(nesday)
 """
@@ -156,14 +156,14 @@ def process_exception_list(temp_exceptions):
 """ check list_every and sorted list_exceptions for intersections
 
 if intersection: 
-	- store exception day in new_list_exception
-	- make all cron jobs during that time to exceptions and store them in the list temp_exceptions
-	- store the start day and the end day of the exception in cron_start_stop
+    - store exception day in new_list_exception
+    - make all cron jobs during that time to exceptions and store them in the list temp_exceptions
+    - store the start day and the end day of the exception in cron_start_stop
 
-	- Nothing will be added to any list if a every day job matches with an exception job
+    - Nothing will be added to any list if a every day job matches with an exception job
 
 If no intersection:
-	- only the exception dates will be added to new_list_exceptions
+    - only the exception dates will be added to new_list_exceptions
 """
 
 
@@ -176,7 +176,6 @@ def split_time_ranges_and_make_job_list(list_exceptions, list_every):
     found_no_intersection = True
 
     for i in range(0, len(sorted_list_exceptions)):
-        print("\n---new exception: ", sorted_list_exceptions[i], " ---\n")
 
         for j in range(0, len(list_every)):
 
@@ -339,7 +338,7 @@ def split_time_ranges_and_make_job_list(list_exceptions, list_every):
             new_list_exceptions.append(temp_exceptions[i][j])
 
     new_list_exceptions = sorted(new_list_exceptions)
-    print("cron_start_stop set and sorted: ", cron_start_stop)
+    print("cron_start_stop set and sorted: ", cron_start_stop, "\n")
     print("new_list_exceptions sorted: ", new_list_exceptions, "\n")
     print("temp_exceptions processed: ", temp_exceptions, "\n")
     return cron_start_stop, new_list_exceptions

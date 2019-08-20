@@ -19,9 +19,11 @@ scheduler.start()
 """ This class receives a post request object from the client,
 serializes the object and checks if it is valid to process it further
 
-The object should be a list with week days or dates, starttimes and endtimes
+The object should be a list with week days or dates, start times and end times
 which settings are received from the sliders in web.html
 """
+
+
 class ScheduleList(APIView):
 
     def post(self, request):
@@ -52,20 +54,20 @@ class ScheduleList(APIView):
             scheduler.pause()
 
             """ For all days which are given, check if it is ...
-            	... one exception day (e.g. 2019-08-12) or an interval (e.g. 2019-08-12 - 2019-08-14)
-            	... an every day job (e.g. Every Monday
+                ... one exception day (e.g. 2019-08-12) or an interval (e.g. 2019-08-12 - 2019-08-14)
+                ... an every day job (e.g. Every Monday
 
-            	Make a continous list for all exception days
-            	-> 	e.g. '2019-11-19 10:10:00 - 2019-11-22 17:15:00', '2019-11-20 05:20:00 - 2019-11-24 21:45:00'
-            		becomes  '2019-11-19 10:10:00 - 2019-11-24 21:45:00'
+            Make a continuous list for all exception days
+                -> 	e.g. '2019-11-19 10:10:00 - 2019-11-22 17:15:00', '2019-11-20 05:20:00 - 2019-11-24 21:45:00'
+                becomes  '2019-11-19 10:10:00 - 2019-11-24 21:45:00'
 
-            	Make a continous list for all every day jobs
-            	-> 	e.g Every Monday 8:00 - 24:00 and Every Tuesday 00:00 - 17:00 becomes Mon-Tues 8:00 - 17:00)
+            Make a continuous list for all every day jobs
+            -> 	e.g Every Monday 8:00 - 24:00 and Every Tuesday 00:00 - 17:00 becomes Mon-Tues 8:00 - 17:00)
 
-            	In the end:
-            	- Find out if evey day jobs intersect exception jobs
-            	- Make a list of all start and stop times for the every day jobs, so the exception days can run
-            	- Add the jobs to the scheduler
+            In the end:
+                - Find out if evey day jobs intersect exception jobs
+                - Make a list of all start and stop times for the every day jobs, so the exception days can run
+                - Add the jobs to the scheduler
             """
             for d in range(0, len(start_day_list)):
 
@@ -90,7 +92,7 @@ class ScheduleList(APIView):
                         start_date = datetime.datetime.strptime(start_date, '%Y-%m-%d %H:%M:%S')
                         start_date_interval = str(end_day_list[d]) + str(' ') + str(start_time_list[d]) + str(':00')
 
-                         # if day ends with 24:00, the end day will be the next day at 00:00
+                        # if day ends with 24:00, the end day will be the next day at 00:00
                         stop_date = str(end_day_list[d]) + str(' ') + str(end_time_list[d]) + str(':00')
                         stop_date = change_24_to_00(stop_date)
 
@@ -121,7 +123,8 @@ class ScheduleList(APIView):
 
             list_exceptions = [str(i) for i in list_exceptions]
             sorted_exception_list = sorted(list_exceptions)
-            cron_start_stop, new_list_exceptions = split_time_ranges_and_make_job_list(sorted_exception_list, list_every)
+            cron_start_stop, new_list_exceptions = split_time_ranges_and_make_job_list(sorted_exception_list,
+                                                                                       list_every)
             new_list_exceptions = sorted(list(set(new_list_exceptions)))
             add_all_jobs(cron_start_stop, list_every, new_list_exceptions, scheduler)
 
